@@ -14,3 +14,4 @@ Pokemon Individual Value Calculator for XY and ORAS
 ### Library
 * [Livet](http://ugaya40.net/livet) (MVVM Infrastructure)
 * [MahApps.Metro](http://mahapps.com/) (Styling)
+* [Extended WPF Toolkit Community Edition](http://wpftoolkit.codeplex.com/) (User Interface)
