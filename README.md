@@ -3,6 +3,8 @@ PokemonCalc
 
 Pokemon Individual Value Calculator for XY and ORAS
 
+#### [Download](https://github.com/gssequence/PokemonCalc/releases)
+
 ### System requirements
 * Windows Vista+
 * .NET Framework 4.5+
