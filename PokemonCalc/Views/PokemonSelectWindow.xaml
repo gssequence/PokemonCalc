@@ -1,0 +1,46 @@
+﻿<metro:MetroWindow x:Class="PokemonCalc.Views.PokemonSelectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
+        xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:v="clr-namespace:PokemonCalc.Views"
+        xmlns:vm="clr-namespace:PokemonCalc.ViewModels"
+        Title="ポケモン選択" Height="350" Width="525" WindowStartupLocation="CenterOwner"
+        GlowBrush="{DynamicResource AccentColorBrush}" TitleCaps="False">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition />
+    </Grid.ColumnDefinitions>
+    <TextBlock VerticalAlignment="Center" Margin="4, 0" Text="検索: " />
+    <TextBox Grid.Column="1" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}" />
+    <ListView x:Name="listView" Grid.Row="1" Grid.ColumnSpan="2" ItemsSource="{Binding PokemonFilteredList}" SelectedItem="{Binding MainWindowViewModel.SelectedItem}">
+      <ListView.ItemsPanel>
+        <ItemsPanelTemplate>
+          <VirtualizingStackPanel />
+        </ItemsPanelTemplate>
+      </ListView.ItemsPanel>
+      <ListView.Resources>
+      </ListView.Resources>
+      <ListView.View>
+        <GridView>
+          <GridViewColumn Header="図鑑No" DisplayMemberBinding="{Binding Number}" />
+          <GridViewColumn Header="名前" DisplayMemberBinding="{Binding Name}" />
+          <GridViewColumn Header="HP" DisplayMemberBinding="{Binding H}" />
+          <GridViewColumn Header="攻撃" DisplayMemberBinding="{Binding A}" />
+          <GridViewColumn Header="防御" DisplayMemberBinding="{Binding B}" />
+          <GridViewColumn Header="特攻" DisplayMemberBinding="{Binding C}" />
+          <GridViewColumn Header="特防" DisplayMemberBinding="{Binding D}" />
+          <GridViewColumn Header="素早" DisplayMemberBinding="{Binding S}" />
+          <GridViewColumn Header="計" DisplayMemberBinding="{Binding Total}" />
+        </GridView>
+      </ListView.View>
+    </ListView>
+  </Grid>
+</metro:MetroWindow>

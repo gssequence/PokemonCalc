@@ -1,0 +1,789 @@
+﻿<metro:MetroWindow x:Class="PokemonCalc.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:l="http://schemas.livet-mvvm.net/2011/wpf"
+        xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns:tk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:v="clr-namespace:PokemonCalc.Views"
+        xmlns:vm="clr-namespace:PokemonCalc.ViewModels"
+        xmlns:c="clr-namespace:PokemonCalc.Views.Converters"
+        xmlns:vr="clr-namespace:PokemonCalc.Views.ValidationRules"
+        Title="ポケモン電卓 for XY &amp; ORAS" Height="800" Width="500" WindowStartupLocation="CenterScreen"
+        GlowBrush="{DynamicResource AccentColorBrush}" TitleCaps="False">
+
+  <Window.DataContext>
+    <vm:MainWindowViewModel/>
+  </Window.DataContext>
+
+  <Window.Resources>
+    <c:ComboBoxItemAndStringConverter x:Key="cbias" />
+    <Style TargetType="Button" BasedOn="{StaticResource MetroButton}">
+      <Setter Property="Focusable" Value="False" />
+    </Style>
+    <SolidColorBrush x:Key="highlight" Color="Pink" />
+  </Window.Resources>
+
+  <i:Interaction.Triggers>
+
+    <!--Viewに特別な要件が存在しない限りは、トリガーやアクションの自作にこだわらず積極的にコードビハインドを使いましょう -->
+    <!--Viewのコードビハインドは、基本的にView内で完結するロジックとViewModelからのイベントの受信(専用リスナを使用する)に限るとトラブルが少なくなります -->
+    <!--Livet1.1からはコードビハインドでViewModelのイベントを受信するためのWeakEventLisnterサポートが追加されています -->
+
+    <!--Windowが閉じたタイミングでViewModelのDisposeメソッドが呼ばれます-->
+    <i:EventTrigger EventName="Closed">
+      <l:DataContextDisposeAction/>
+    </i:EventTrigger>
+
+    <!--WindowのCloseキャンセル処理に対応する場合は、WindowCloseCancelBehaviorの使用を検討してください-->
+
+  </i:Interaction.Triggers>
+  
+  <ScrollViewer>
+    <StackPanel Orientation="Vertical" UseLayoutRounding="True">
+      <GroupBox Header="種族値">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Text="{Binding SelectedItem.Name, Mode=OneWay}" FontSize="24" HorizontalAlignment="Center" />
+          <Border Grid.Row="1" Margin="8" BorderThickness="1" BorderBrush="{DynamicResource AccentColorBrush}" Padding="4">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+              </Grid.RowDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.Resources>
+                <Style TargetType="TextBlock">
+                  <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+              </Grid.Resources>
+              <TextBlock Grid.Row="0" Grid.Column="0" Text="HP" />
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="攻撃" />
+              <TextBlock Grid.Row="0" Grid.Column="2" Text="防御" />
+              <TextBlock Grid.Row="0" Grid.Column="3" Text="特攻" />
+              <TextBlock Grid.Row="0" Grid.Column="4" Text="特防" />
+              <TextBlock Grid.Row="0" Grid.Column="5" Text="素早" />
+              <TextBlock Grid.Row="0" Grid.Column="6" Text="合計" />
+              <TextBlock Grid.Row="1" Grid.Column="0" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.H}" />
+              <TextBlock Grid.Row="1" Grid.Column="1" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.A}" />
+              <TextBlock Grid.Row="1" Grid.Column="2" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.B}" />
+              <TextBlock Grid.Row="1" Grid.Column="3" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.C}" />
+              <TextBlock Grid.Row="1" Grid.Column="4" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.D}" />
+              <TextBlock Grid.Row="1" Grid.Column="5" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.S}" />
+              <TextBlock Grid.Row="1" Grid.Column="6" FontSize="20" FontWeight="Bold" Text="{Binding SelectedItem.Total}" />
+            </Grid>
+          </Border>
+          <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="2" Content="ポケモン選択..." Padding="10">
+            <i:Interaction.Triggers>
+              <i:EventTrigger EventName="Click">
+                <l:TransitionInteractionMessageAction WindowType="{x:Type v:PokemonSelectWindow}" Mode="NewOrActive">
+                  <l:DirectInteractionMessage>
+                    <l:TransitionMessage TransitionViewModel="{Binding PokemonSelectWindowViewModel}" />
+                  </l:DirectInteractionMessage>
+                </l:TransitionInteractionMessageAction>
+              </i:EventTrigger>
+            </i:Interaction.Triggers>
+          </Button>
+        </Grid>
+      </GroupBox>
+      <GroupBox Header="能力値・努力値設定">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <Grid.Resources>
+            <Style TargetType="TextBlock">
+              <Setter Property="VerticalAlignment" Value="Center" />
+              <Setter Property="HorizontalAlignment" Value="Right" />
+              <Setter Property="Margin" Value="5" />
+            </Style>
+          </Grid.Resources>
+          
+          <TextBlock Grid.Row="0" Grid.Column="0" Text="性格:" />
+          <ComboBox Grid.Row="0" Grid.Column="1" SelectedIndex="0" SelectedItem="{Binding SelectedCharacter, Mode=OneWayToSource, Converter={StaticResource cbias}}">
+            <ComboBoxItem Content="いじっぱり" />
+            <ComboBoxItem Content="うっかりや" />
+            <ComboBoxItem Content="おくびょう" />
+            <ComboBoxItem Content="おだやか" />
+            <ComboBoxItem Content="おっとり" />
+            <ComboBoxItem Content="おとなしい" />
+            <ComboBoxItem Content="がんばりや" />
+            <ComboBoxItem Content="きまぐれ" />
+            <ComboBoxItem Content="さみしがり" />
+            <ComboBoxItem Content="しんちょう" />
+            <ComboBoxItem Content="すなお" />
+            <ComboBoxItem Content="ずぶとい" />
+            <ComboBoxItem Content="せっかち" />
+            <ComboBoxItem Content="てれや" />
+            <ComboBoxItem Content="なまいき" />
+            <ComboBoxItem Content="のうてんき" />
+            <ComboBoxItem Content="のんき" />
+            <ComboBoxItem Content="ひかえめ" />
+            <ComboBoxItem Content="まじめ" />
+            <ComboBoxItem Content="むじゃき" />
+            <ComboBoxItem Content="やんちゃ" />
+            <ComboBoxItem Content="ゆうかん" />
+            <ComboBoxItem Content="ようき" />
+            <ComboBoxItem Content="れいせい" />
+            <ComboBoxItem Content="わんぱく" />
+          </ComboBox>
+
+          <TextBlock Grid.Row="0" Grid.Column="2" Text="個性:" />
+          <ComboBox Grid.Row="0" Grid.Column="3" SelectedIndex="{Binding SelectedPersonalityIndex}" SelectedItem="{Binding SelectedPersonality, Mode=OneWayToSource, Converter={StaticResource cbias}}">
+            <ComboBoxItem Content="(指定しない)" />
+            <ComboBoxItem Content="あばれることがすき" />
+            <ComboBoxItem Content="イタズラがすき" />
+            <ComboBoxItem Content="いねむりがおおい" />
+            <ComboBoxItem Content="うたれづよい" />
+            <ComboBoxItem Content="おっちょこちょい" />
+            <ComboBoxItem Content="かけっこがすき" />
+            <ComboBoxItem Content="がまんづよい" />
+            <ComboBoxItem Content="からだがじょうぶ" />
+            <ComboBoxItem Content="かんがえごとがおおい" />
+            <ComboBoxItem Content="きがつよい" />
+            <ComboBoxItem Content="ケンカをするのがすき" />
+            <ComboBoxItem Content="こうきしんがつよい" />
+            <ComboBoxItem Content="しんぼうづよい" />
+            <ComboBoxItem Content="すこしおちょうしもの" />
+            <ComboBoxItem Content="たべるのがだいすき" />
+            <ComboBoxItem Content="ちからがじまん" />
+            <ComboBoxItem Content="ちのけがおおい" />
+            <ComboBoxItem Content="ちょっとおこりっぽい" />
+            <ComboBoxItem Content="ちょっぴりごうじょう" />
+            <ComboBoxItem Content="ちょっぴりみえっぱり" />
+            <ComboBoxItem Content="とてもきちょうめん" />
+            <ComboBoxItem Content="にげるのがはやい" />
+            <ComboBoxItem Content="ぬけめがない" />
+            <ComboBoxItem Content="ねばりづよい" />
+            <ComboBoxItem Content="のんびりするのがすき" />
+            <ComboBoxItem Content="ひるねをよくする" />
+            <ComboBoxItem Content="まけずぎらい" />
+            <ComboBoxItem Content="まけんきがつよい" />
+            <ComboBoxItem Content="ものおとにびんかん" />
+            <ComboBoxItem Content="ものをよくちらかす" />
+          </ComboBox>
+          
+          <TextBlock Grid.Row="1" Grid.Column="0" Text="めざパ:" />
+          <ComboBox Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding SelectedMezapaIndex}" SelectedItem="{Binding SelectedMezapa, Mode=OneWayToSource, Converter={StaticResource cbias}}">
+            <ComboBoxItem Content="(指定しない)" />
+            <ComboBoxItem Content="ほのお" />
+            <ComboBoxItem Content="みず" />
+            <ComboBoxItem Content="でんき" />
+            <ComboBoxItem Content="くさ" />
+            <ComboBoxItem Content="こおり" />
+            <ComboBoxItem Content="かくとう" />
+            <ComboBoxItem Content="どく" />
+            <ComboBoxItem Content="じめん" />
+            <ComboBoxItem Content="ひこう" />
+            <ComboBoxItem Content="エスパー" />
+            <ComboBoxItem Content="むし" />
+            <ComboBoxItem Content="いわ" />
+            <ComboBoxItem Content="ゴースト" />
+            <ComboBoxItem Content="ドラゴン" />
+            <ComboBoxItem Content="あく" />
+            <ComboBoxItem Content="はがね" />
+          </ComboBox>
+
+          <TextBlock Grid.Row="2" Grid.Column="0" Text="レベル:" />
+          <tk:IntegerUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Level}" Minimum="1" Maximum="100" TextAlignment="Left" TabIndex="1" />
+          <StackPanel Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Orientation="Horizontal">
+            <StackPanel.Resources>
+              <Style TargetType="Button" BasedOn="{StaticResource MetroButton}">
+                <Setter Property="Width" Value="35" />
+                <Setter Property="Focusable" Value="False" />
+              </Style>
+            </StackPanel.Resources>
+            <Button Grid.Column="1" Content="1">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetLevel" MethodParameter="1" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="30">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetLevel" MethodParameter="30" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="3" Content="50">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetLevel" MethodParameter="50" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="3" Content="70">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetLevel" MethodParameter="70" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="3" Content="100">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetLevel" MethodParameter="100" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </StackPanel>
+
+          <TextBlock Grid.Row="3" Grid.Column="0" Text="HP:" />
+          <tk:IntegerUpDown Grid.Row="3" Grid.Column="1" Value="{Binding AH}" Minimum="1" Maximum="1000" TextAlignment="Left" TabIndex="2" />
+          <TextBlock Grid.Row="3" Grid.Column="2" Text="努力値:" />
+          <Grid Grid.Row="3" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition Width="30" />
+            </Grid.ColumnDefinitions>
+            <tk:IntegerUpDown Value="{Binding DH}" Minimum="0" Maximum="255" TextAlignment="Left" TabIndex="8" />
+            <Button Grid.Column="1" Content="0">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDH" MethodParameter="0" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="252">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDH" MethodParameter="252" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </Grid>
+
+          <TextBlock Grid.Row="4" Grid.Column="0" Text="攻撃:" />
+          <tk:IntegerUpDown Grid.Row="4" Grid.Column="1" Value="{Binding AA}" Minimum="1" Maximum="1000" TextAlignment="Left" TabIndex="3" />
+          <TextBlock Grid.Row="4" Grid.Column="2" Text="努力値:" />
+          <Grid Grid.Row="4" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition Width="30" />
+            </Grid.ColumnDefinitions>
+            <tk:IntegerUpDown Value="{Binding DA}" Minimum="0" Maximum="255" TextAlignment="Left" TabIndex="9" />
+            <Button Grid.Column="1" Content="0">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDA" MethodParameter="0" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="252">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDA" MethodParameter="252" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </Grid>
+
+          <TextBlock Grid.Row="5" Grid.Column="0" Text="防御:" />
+          <tk:IntegerUpDown Grid.Row="5" Grid.Column="1" Value="{Binding AB}" Minimum="1" Maximum="1000" TextAlignment="Left" TabIndex="4" />
+          <TextBlock Grid.Row="5" Grid.Column="2" Text="努力値:" />
+          <Grid Grid.Row="5" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition Width="30" />
+            </Grid.ColumnDefinitions>
+            <tk:IntegerUpDown Value="{Binding DB}" Minimum="0" Maximum="255" TextAlignment="Left" TabIndex="10" />
+            <Button Grid.Column="1" Content="0">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDB" MethodParameter="0" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="252">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDB" MethodParameter="252" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </Grid>
+
+          <TextBlock Grid.Row="6" Grid.Column="0" Text="特攻:" />
+          <tk:IntegerUpDown Grid.Row="6" Grid.Column="1" Value="{Binding AC}" Minimum="1" Maximum="1000" TextAlignment="Left" TabIndex="5" />
+          <TextBlock Grid.Row="6" Grid.Column="2" Text="努力値:" />
+          <Grid Grid.Row="6" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition Width="30" />
+            </Grid.ColumnDefinitions>
+            <tk:IntegerUpDown Value="{Binding DC}" Minimum="0" Maximum="255" TextAlignment="Left" TabIndex="11" />
+            <Button Grid.Column="1" Content="0">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDC" MethodParameter="0" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="252">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDC" MethodParameter="252" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </Grid>
+
+          <TextBlock Grid.Row="7" Grid.Column="0" Text="特防:" />
+          <tk:IntegerUpDown Grid.Row="7" Grid.Column="1" Value="{Binding AD}" Minimum="1" Maximum="1000" TextAlignment="Left" TabIndex="6" />
+          <TextBlock Grid.Row="7" Grid.Column="2" Text="努力値:" />
+          <Grid Grid.Row="7" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition Width="30" />
+            </Grid.ColumnDefinitions>
+            <tk:IntegerUpDown Value="{Binding DD}" Minimum="0" Maximum="255" TextAlignment="Left" TabIndex="12" />
+            <Button Grid.Column="1" Content="0">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDD" MethodParameter="0" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="252">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDD" MethodParameter="252" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </Grid>
+
+          <TextBlock Grid.Row="8" Grid.Column="0" Text="素早:" />
+          <tk:IntegerUpDown Grid.Row="8" Grid.Column="1" Value="{Binding AS}" Minimum="1" Maximum="1000" TextAlignment="Left" TabIndex="7" />
+          <TextBlock Grid.Row="8" Grid.Column="2" Text="努力値:" />
+          <Grid Grid.Row="8" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="30" />
+              <ColumnDefinition Width="30" />
+            </Grid.ColumnDefinitions>
+            <tk:IntegerUpDown Value="{Binding DS}" Minimum="0" Maximum="255" TextAlignment="Left" TabIndex="13" />
+            <Button Grid.Column="1" Content="0">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDS" MethodParameter="0" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+            <Button Grid.Column="2" Content="252">
+              <i:Interaction.Triggers>
+                <i:EventTrigger EventName="Click">
+                  <l:LivetCallMethodAction MethodTarget="{Binding}" MethodName="SetDS" MethodParameter="252" />
+                </i:EventTrigger>
+              </i:Interaction.Triggers>
+            </Button>
+          </Grid>
+          <Grid Grid.Row="9" Grid.ColumnSpan="4">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button Content="絞り込みを適用" Command="{Binding ApplyFilterCommand}">
+              <Button.Background>
+                <Binding Path="IsFiltered">
+                  <Binding.Converter>
+                    <c:BoolAndBrushConverter BrushWhenFalse="#FFF7F7F7" BrushWhenTrue="{StaticResource highlight}" />
+                  </Binding.Converter>
+                </Binding>
+              </Button.Background>
+            </Button>
+            <Button Grid.Column="1" Content="絞り込みをリセット" Command="{Binding ResetFilterCommand}" />
+          </Grid>
+          <Button Grid.Row="10" Grid.ColumnSpan="4" Content="入力値と絞り込みをリセット" Command="{Binding ResetInputCommand}" />
+        </Grid>
+      </GroupBox>
+      <GroupBox Header="能力値テーブル">
+        <StackPanel Orientation="Vertical">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition />
+              <ColumnDefinition Width="50" />
+              <ColumnDefinition Width="50" />
+            </Grid.ColumnDefinitions>
+            <TextBox IsReadOnly="True" Text="{Binding StringNotation, Mode=OneWay}" />
+            <Button Grid.Column="1" Content="コピー" Command="{Binding CopyCommand}" />
+            <Button Grid.Column="2" Content="ツイート" Command="{Binding TweetCommand}" />
+          </Grid>
+          <Grid Margin="6, 3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="めざパ: " VerticalAlignment="Center" />
+            <WrapPanel Grid.Column="1">
+              <WrapPanel.Resources>
+                <Style TargetType="Border">
+                  <Setter Property="CornerRadius" Value="4" />
+                  <Setter Property="Margin" Value="2" />
+                </Style>
+                <Style TargetType="TextBlock">
+                  <Setter Property="Padding" Value="5, 2" />
+                </Style>
+              </WrapPanel.Resources>
+              
+              <Border Background="Red">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Fire">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="ほのお" />
+              </Border>
+              <Border Background="DeepSkyBlue">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Water">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="みず" />
+              </Border>
+              <Border Background="Gold">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Electric">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="Black" Text="でんき" />
+              </Border>
+              <Border Background="YellowGreen">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Grass">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="くさ" />
+              </Border>
+              <Border Background="Cyan">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Ice">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="Black" Text="こおり" />
+              </Border>
+              <Border Background="Maroon">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Fighting">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="かくとう" />
+              </Border>
+              <Border Background="MediumOrchid">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Poison">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="どく" />
+              </Border>
+              <Border Background="Goldenrod">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Ground">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="じめん" />
+              </Border>
+              <Border Background="LightSkyBlue">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Flying">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="ひこう" />
+              </Border>
+              <Border Background="HotPink">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Psychic">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="エスパー" />
+              </Border>
+              <Border Background="Olive">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Bug">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="むし" />
+              </Border>
+              <Border Background="Chocolate">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Rock">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="いわ" />
+              </Border>
+              <Border Background="Indigo">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Ghost">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="ゴースト" />
+              </Border>
+              <Border Background="MediumSlateBlue">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Dragon">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="ドラゴン" />
+              </Border>
+              <Border Background="Gray">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Dark">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="あく" />
+              </Border>
+              <Border Background="SteelBlue">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Steel">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Foreground="White" Text="はがね" />
+              </Border>
+              <Border BorderBrush="Black" BorderThickness="1">
+                <Border.Visibility>
+                  <Binding Path="MezapaViewModel.Undefined">
+                    <Binding.Converter>
+                      <l:VisibilityAndBooleanConverter ConvertWhenFalse="Collapsed" ConvertWhenTrue="Visible" />
+                    </Binding.Converter>
+                  </Binding>
+                </Border.Visibility>
+                <TextBlock Text="???" Padding="5, 0" Margin="0, 1" />
+              </Border>
+              
+            </WrapPanel>
+          </Grid>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.Resources>
+              <Style TargetType="TextBlock">
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Margin" Value="5" />
+              </Style>
+              <Style TargetType="Border">
+                <Setter Property="Background" Value="{DynamicResource AccentColorBrush}" />
+              </Style>
+            </Grid.Resources>
+            <Border Grid.Column="0">
+              <TextBlock Text="個体値" />
+            </Border>
+            <Border Grid.Column="1">
+              <TextBlock Text="HP" />
+            </Border>
+            <Border Grid.Column="2">
+              <TextBlock Text="攻撃" />
+            </Border>
+            <Border Grid.Column="3">
+              <TextBlock Text="防御" />
+            </Border>
+            <Border Grid.Column="4">
+              <TextBlock Text="特攻" />
+            </Border>
+            <Border Grid.Column="5">
+              <TextBlock Text="特防" />
+            </Border>
+            <Border Grid.Column="6">
+              <TextBlock Text="素早" />
+            </Border>
+
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding Values}" Focusable="False">
+            <ItemsControl.Template>
+              <ControlTemplate TargetType="ItemsControl">
+                <Border>
+                  <ItemsPresenter />
+                </Border>
+              </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Vertical" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border BorderThickness="0, 0, 0, 1" BorderBrush="{DynamicResource AccentColorBrush}">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.Resources>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="HorizontalAlignment" Value="Center" />
+                        <Setter Property="Margin" Value="1" />
+                      </Style>
+                    </Grid.Resources>
+                    <Border Grid.Column="0" Background="{DynamicResource AccentColorBrush}">
+                      <TextBlock Text="{Binding NumStr}" Foreground="White" />
+                    </Border>
+                    <Border Grid.Column="1" BorderThickness="0, 0, 1, 0" BorderBrush="{DynamicResource AccentColorBrush}">
+                      <Border.Background>
+                        <Binding Path="IsMatchH" Mode="OneWay">
+                          <Binding.Converter>
+                            <c:BoolAndBrushConverter BrushWhenFalse="Transparent" BrushWhenTrue="{StaticResource highlight}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </Border.Background>
+                      <TextBlock Text="{Binding H}" />
+                    </Border>
+                    <Border Grid.Column="2" BorderThickness="0, 0, 1, 0" BorderBrush="{DynamicResource AccentColorBrush}">
+                      <Border.Background>
+                        <Binding Path="IsMatchA" Mode="OneWay">
+                          <Binding.Converter>
+                            <c:BoolAndBrushConverter BrushWhenFalse="Transparent" BrushWhenTrue="{StaticResource highlight}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </Border.Background>
+                      <TextBlock Text="{Binding A}" />
+                    </Border>
+                    <Border Grid.Column="3" BorderThickness="0, 0, 1, 0" BorderBrush="{DynamicResource AccentColorBrush}">
+                      <Border.Background>
+                        <Binding Path="IsMatchB" Mode="OneWay">
+                          <Binding.Converter>
+                            <c:BoolAndBrushConverter BrushWhenFalse="Transparent" BrushWhenTrue="{StaticResource highlight}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </Border.Background>
+                      <TextBlock Text="{Binding B}" />
+                    </Border>
+                    <Border Grid.Column="4" BorderThickness="0, 0, 1, 0" BorderBrush="{DynamicResource AccentColorBrush}">
+                      <Border.Background>
+                        <Binding Path="IsMatchC" Mode="OneWay">
+                          <Binding.Converter>
+                            <c:BoolAndBrushConverter BrushWhenFalse="Transparent" BrushWhenTrue="{StaticResource highlight}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </Border.Background>
+                      <TextBlock Text="{Binding C}" />
+                    </Border>
+                    <Border Grid.Column="5" BorderThickness="0, 0, 1, 0" BorderBrush="{DynamicResource AccentColorBrush}">
+                      <Border.Background>
+                        <Binding Path="IsMatchD" Mode="OneWay">
+                          <Binding.Converter>
+                            <c:BoolAndBrushConverter BrushWhenFalse="Transparent" BrushWhenTrue="{StaticResource highlight}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </Border.Background>
+                      <TextBlock Text="{Binding D}" />
+                    </Border>
+                    <Border Grid.Column="6" BorderThickness="0, 0, 1, 0" BorderBrush="{DynamicResource AccentColorBrush}">
+                      <Border.Background>
+                        <Binding Path="IsMatchS" Mode="OneWay">
+                          <Binding.Converter>
+                            <c:BoolAndBrushConverter BrushWhenFalse="Transparent" BrushWhenTrue="{StaticResource highlight}" />
+                          </Binding.Converter>
+                        </Binding>
+                      </Border.Background>
+                      <TextBlock Text="{Binding S}" />
+                    </Border>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </GroupBox>
+    </StackPanel>
+  </ScrollViewer>
+</metro:MetroWindow>
