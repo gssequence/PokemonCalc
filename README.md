@@ -1,7 +1,8 @@
-PokemonCalc
+PokemonCalc [![Build status](https://ci.appveyor.com/api/projects/status/emq0s2ug793vgowt/branch/master?svg=true)](https://ci.appveyor.com/project/gssequence/pokemoncalc/branch/master)
 ===========
 
 Pokemon Individual Value Calculator for XY and ORAS
+
 
 #### [Download](https://github.com/gssequence/PokemonCalc/releases)
 
